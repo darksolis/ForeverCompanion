@@ -1,0 +1,102 @@
+﻿category,trigger,exact_filename,example_words,priority
+proc,WARRIOR - Overpower,overpower.ogg,OVERPOWER!,class/proc
+proc,WARRIOR - Revenge,revenge.ogg,REVENGE!,class/proc
+proc,WARRIOR - Sudden Death,sudden_death.ogg,EXECUTE!,class/proc
+proc,WARRIOR - Bloodsurge,bloodsurge.ogg,SLAM!,class/proc
+proc,WARRIOR - Sword and Board,sword_and_board.ogg,SHIELD SLAM!,class/proc
+proc,ROGUE - Riposte,riposte.ogg,RIPOSTE!,class/proc
+proc,ROGUE - Blindside,blindside.ogg,AMBUSH!,class/proc
+proc,ROGUE - Audacity,audacity.ogg,DISPATCH!,class/proc
+proc,ROGUE - Opportunity,opportunity.ogg,OPPORTUNITY!,class/proc
+proc,SHAMAN - Maelstrom Weapon,maelstrom_weapon.ogg,MAELSTROM!,class/proc
+proc,SHAMAN - Lava Surge,lava_surge.ogg,LAVA SURGE!,class/proc
+proc,SHAMAN - Stormbringer,stormbringer.ogg,STORMBRINGER!,class/proc
+proc,SHAMAN - Hot Hand,hot_hand.ogg,HOT HAND!,class/proc
+proc,SHAMAN - Power of the Maelstrom,power_of_the_maelstrom.ogg,LIGHTNING BOLT!,class/proc
+proc,PALADIN - The Art of War,the_art_of_war.ogg,ART OF WAR!,class/proc
+proc,PALADIN - Divine Purpose,divine_purpose.ogg,DIVINE PURPOSE!,class/proc
+proc,PALADIN - Infusion of Light,infusion_of_light.ogg,INFUSION OF LIGHT!,class/proc
+proc,PALADIN - Grand Crusader,grand_crusader.ogg,GRAND CRUSADER!,class/proc
+proc,PALADIN - Shining Light,shining_light.ogg,SHINING LIGHT!,class/proc
+proc,HUNTER - Lock and Load,lock_and_load.ogg,LOCK AND LOAD!,class/proc
+proc,HUNTER - Kill Shot,kill_shot.ogg,KILL SHOT!,class/proc
+proc,HUNTER - Precise Shots,precise_shots.ogg,PRECISE SHOTS!,class/proc
+proc,HUNTER - Tip of the Spear,tip_of_the_spear.ogg,TIP OF THE SPEAR!,class/proc
+proc,MAGE - Hot Streak,hot_streak.ogg,HOT STREAK!,class/proc
+proc,MAGE - Heating Up,heating_up.ogg,HEATING UP!,class/proc
+proc,MAGE - Fingers of Frost,fingers_of_frost.ogg,FINGERS OF FROST!,class/proc
+proc,MAGE - Brain Freeze,brain_freeze.ogg,BRAIN FREEZE!,class/proc
+proc,MAGE - Clearcasting,clearcasting.ogg,CLEARCASTING!,class/proc
+proc,WARLOCK - Nightfall,nightfall.ogg,NIGHTFALL!,class/proc
+proc,WARLOCK - Demonic Core,demonic_core.ogg,DEMONIC CORE!,class/proc
+proc,WARLOCK - Molten Core,molten_core.ogg,MOLTEN CORE!,class/proc
+proc,WARLOCK - Backdraft,backdraft.ogg,BACKDRAFT!,class/proc
+proc,WARLOCK - Decimation,decimation.ogg,DECIMATION!,class/proc
+proc,WARLOCK - Soulburn,soulburn.ogg,SOULBURN!,class/proc
+proc,PRIEST - Surge of Light,surge_of_light.ogg,SURGE OF LIGHT!,class/proc
+proc,PRIEST - Shadowy Insight,shadowy_insight.ogg,SHADOWY INSIGHT!,class/proc
+proc,PRIEST - Divine Insight,divine_insight.ogg,DIVINE INSIGHT!,class/proc
+proc,PRIEST - Power of the Dark Side,power_of_the_dark_side.ogg,POWER OF THE DARK SIDE!,class/proc
+proc,PRIEST - Mind Melt,mind_melt.ogg,MIND MELT!,class/proc
+proc,DRUID - Clearcasting,clearcasting.ogg,CLEARCASTING!,class/proc
+proc,DRUID - Predatory Swiftness,predatory_swiftness.ogg,PREDATORY SWIFTNESS!,class/proc
+proc,DRUID - Shooting Stars,shooting_stars.ogg,SHOOTING STARS!,class/proc
+proc,DRUID - Gore,gore.ogg,GORE!,class/proc
+proc,DRUID - Tooth and Claw,tooth_and_claw.ogg,TOOTH AND CLAW!,class/proc
+proc,DRUID - Sudden Ambush,sudden_ambush.ogg,SUDDEN AMBUSH!,class/proc
+proc,DRUID - Lunar Eclipse,lunar_eclipse.ogg,ECLIPSE!,class/proc
+proc,DEATHKNIGHT - Killing Machine,killing_machine.ogg,KILLING MACHINE!,class/proc
+proc,DEATHKNIGHT - Rime,rime.ogg,RIME!,class/proc
+proc,DEATHKNIGHT - Sudden Doom,sudden_doom.ogg,SUDDEN DOOM!,class/proc
+proc,DEATHKNIGHT - Crimson Scourge,crimson_scourge.ogg,CRIMSON SCOURGE!,class/proc
+proc,MONK - Dance of Chi-Ji,dance_of_chi_ji.ogg,DANCE OF CHI-JI!,class/proc
+proc,MONK - Blackout Kick!,blackout_kick.ogg,BLACKOUT KICK!,class/proc
+proc,MONK - Teachings of the Monastery,teachings_of_the_monastery.ogg,TEACHINGS READY!,class/proc
+proc,DEMONHUNTER - Demonic,demonic.ogg,DEMONIC!,class/proc
+proc,DEMONHUNTER - Inner Demon,inner_demon.ogg,INNER DEMON!,class/proc
+proc,DEMONHUNTER - Chaos Theory,chaos_theory.ogg,CHAOS THEORY!,class/proc
+proc,EVOKER - Essence Burst,essence_burst.ogg,ESSENCE BURST!,class/proc
+proc,EVOKER - Burnout,burnout.ogg,BURNOUT!,class/proc
+proc,EVOKER - Snapfire,snapfire.ogg,SNAPFIRE!,class/proc
+proc,EVOKER - Leaping Flames,leaping_flames.ogg,LEAPING FLAMES!,class/proc
+combat,Successful interrupt,interrupt.ogg,INTERRUPT!,must-have
+combat,Low health warning,low_health.ogg,Careful! You’re low!,must-have
+combat,Very low health / close call,close_call.ogg,That was WAY too close.,must-have
+combat,Player death,sarcastic_death.ogg,Well... that went beautifully.,must-have
+combat,Player resurrects,back_alive.ogg,Back on your feet. Try to keep it that way.,recommended
+leveling,Level gained,level_up.ogg,There it is! LEVEL UP!,must-have
+leveling,Near next level,almost_level.ogg,You’re almost there. Keep going.,recommended
+combat,Normal fight win,combat_win.ogg,Clean. Next.,optional
+combat,Long/hard fight survived,hard_fight.ogg,Okay... you earned that one.,recommended
+dungeon,Boss pull,boss_pull.ogg,Boss up. Focus.,must-have
+dungeon,Boss defeated,boss_kill.ogg,Boss down! Beautiful.,must-have
+dungeon,Dungeon entered,dungeon_entry.ogg,All right. Dungeon time.,must-have
+dungeon,Encounter wipe,dungeon_wipe.ogg,Shake it off. We go again.,must-have
+dungeon,Dungeon completed,dungeon_complete.ogg,Clean run. Nicely done.,recommended
+loot,Rare-quality loot,rare_loot.ogg,"Oh, that’s worth a look.",must-have
+loot,Epic-quality loot,epic_loot.ogg,Purple! Now you’ve got my attention.,must-have
+loot,Detected equipment upgrade,upgrade.ogg,That’s an upgrade. Equip it.,must-have
+quest,Quest completed,quest_complete.ogg,Quest complete. Keep moving.,recommended
+warning,Bags full,bags_full.ogg,Your bags are full. Again.,recommended
+warning,Low durability,repair_gear.ogg,Repair your gear before it gives up.,recommended
+warning,Broken equipment,gear_broken.ogg,Something broke. Impressive.,recommended
+group,Ready check,ready_check.ogg,Ready check. Wake up.,recommended
+ambient,Return from AFK,welcome_back.ogg,There you are. Finally.,recommended
+pvp,Player kill,pvp_kill.ogg,Player down. Nice.,optional
+pvp,Battleground victory,victory.ogg,Victory. I like this timeline.,optional
+pvp,Battleground loss,defeat.ogg,Well... that could have gone better.,optional
+target,Elite targeted,elite_target.ogg,Elite. Pay attention.,recommended
+target,Dangerous/high-level target,dangerous_target.ogg,Careful. This one can hurt you.,recommended
+resource,Low mana,low_mana.ogg,Mana’s low. Slow down.,optional
+resource,Rage capped,rage_full.ogg,Rage is capped. Spend it.,optional
+resource,Energy capped,energy_full.ogg,Energy capped. Use it.,optional
+travel,Flight begins,flight_start.ogg,Sit back. I’ve got time to judge your route.,optional
+travel,Flight lands,flight_land.ogg,We’re here. Back to work.,optional
+travel,Mount used,mounted.ogg,Much better. Walking is overrated.,optional
+travel,Swimming detected,swimming.ogg,Of course we’re swimming now.,optional
+gold,Gold farm started,farm_start.ogg,Farm started. Let’s make this worth it.,optional
+gold,Gold farm stopped,farm_stop.ogg,Farm done. Show me the numbers.,optional
+target,Rare target discovered,rare_found.ogg,Rare spotted. Don’t let it get away.,future-ready
+quest,Quest appears stalled,quest_stalled.ogg,We’ve been on this one a while. Change the plan?,optional
+ambient,Player goes AFK,afk.ogg,Fine. I’ll wait. Elegantly.,optional
+travel,Hearth action,hearth.ogg,Homeward bound. Try not to forget why.,optional

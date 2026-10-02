@@ -1,0 +1,61 @@
+class,proc,filename,suggested_spoken_line
+WARRIOR,Overpower,overpower.ogg,OVERPOWER!
+WARRIOR,Revenge,revenge.ogg,REVENGE!
+WARRIOR,Sudden Death,sudden_death.ogg,EXECUTE!
+WARRIOR,Bloodsurge,bloodsurge.ogg,SLAM!
+WARRIOR,Sword and Board,sword_and_board.ogg,SHIELD SLAM!
+ROGUE,Riposte,riposte.ogg,RIPOSTE!
+ROGUE,Blindside,blindside.ogg,AMBUSH!
+ROGUE,Audacity,audacity.ogg,DISPATCH!
+ROGUE,Opportunity,opportunity.ogg,OPPORTUNITY!
+SHAMAN,Maelstrom Weapon,maelstrom_weapon.ogg,MAELSTROM!
+SHAMAN,Lava Surge,lava_surge.ogg,LAVA SURGE!
+SHAMAN,Stormbringer,stormbringer.ogg,STORMBRINGER!
+SHAMAN,Hot Hand,hot_hand.ogg,HOT HAND!
+SHAMAN,Power of the Maelstrom,power_of_the_maelstrom.ogg,LIGHTNING BOLT!
+PALADIN,The Art of War,the_art_of_war.ogg,ART OF WAR!
+PALADIN,Divine Purpose,divine_purpose.ogg,DIVINE PURPOSE!
+PALADIN,Infusion of Light,infusion_of_light.ogg,INFUSION OF LIGHT!
+PALADIN,Grand Crusader,grand_crusader.ogg,GRAND CRUSADER!
+PALADIN,Shining Light,shining_light.ogg,SHINING LIGHT!
+HUNTER,Lock and Load,lock_and_load.ogg,LOCK AND LOAD!
+HUNTER,Kill Shot,kill_shot.ogg,KILL SHOT!
+HUNTER,Precise Shots,precise_shots.ogg,PRECISE SHOTS!
+HUNTER,Tip of the Spear,tip_of_the_spear.ogg,TIP OF THE SPEAR!
+MAGE,Hot Streak,hot_streak.ogg,HOT STREAK!
+MAGE,Heating Up,heating_up.ogg,HEATING UP!
+MAGE,Fingers of Frost,fingers_of_frost.ogg,FINGERS OF FROST!
+MAGE,Brain Freeze,brain_freeze.ogg,BRAIN FREEZE!
+MAGE,Clearcasting,clearcasting.ogg,CLEARCASTING!
+WARLOCK,Nightfall,nightfall.ogg,NIGHTFALL!
+WARLOCK,Demonic Core,demonic_core.ogg,DEMONIC CORE!
+WARLOCK,Molten Core,molten_core.ogg,MOLTEN CORE!
+WARLOCK,Backdraft,backdraft.ogg,BACKDRAFT!
+WARLOCK,Decimation,decimation.ogg,DECIMATION!
+WARLOCK,Soulburn,soulburn.ogg,SOULBURN!
+PRIEST,Surge of Light,surge_of_light.ogg,SURGE OF LIGHT!
+PRIEST,Shadowy Insight,shadowy_insight.ogg,SHADOWY INSIGHT!
+PRIEST,Divine Insight,divine_insight.ogg,DIVINE INSIGHT!
+PRIEST,Power of the Dark Side,power_of_the_dark_side.ogg,POWER OF THE DARK SIDE!
+PRIEST,Mind Melt,mind_melt.ogg,MIND MELT!
+DRUID,Clearcasting,clearcasting.ogg,CLEARCASTING!
+DRUID,Predatory Swiftness,predatory_swiftness.ogg,PREDATORY SWIFTNESS!
+DRUID,Shooting Stars,shooting_stars.ogg,SHOOTING STARS!
+DRUID,Gore,gore.ogg,GORE!
+DRUID,Tooth and Claw,tooth_and_claw.ogg,TOOTH AND CLAW!
+DRUID,Sudden Ambush,sudden_ambush.ogg,SUDDEN AMBUSH!
+DRUID,Lunar Eclipse,lunar_eclipse.ogg,ECLIPSE!
+DEATHKNIGHT,Killing Machine,killing_machine.ogg,KILLING MACHINE!
+DEATHKNIGHT,Rime,rime.ogg,RIME!
+DEATHKNIGHT,Sudden Doom,sudden_doom.ogg,SUDDEN DOOM!
+DEATHKNIGHT,Crimson Scourge,crimson_scourge.ogg,CRIMSON SCOURGE!
+MONK,Dance of Chi-Ji,dance_of_chi_ji.ogg,DANCE OF CHI-JI!
+MONK,Blackout Kick!,blackout_kick.ogg,BLACKOUT KICK!
+MONK,Teachings of the Monastery,teachings_of_the_monastery.ogg,TEACHINGS READY!
+DEMONHUNTER,Demonic,demonic.ogg,DEMONIC!
+DEMONHUNTER,Inner Demon,inner_demon.ogg,INNER DEMON!
+DEMONHUNTER,Chaos Theory,chaos_theory.ogg,CHAOS THEORY!
+EVOKER,Essence Burst,essence_burst.ogg,ESSENCE BURST!
+EVOKER,Burnout,burnout.ogg,BURNOUT!
+EVOKER,Snapfire,snapfire.ogg,SNAPFIRE!
+EVOKER,Leaping Flames,leaping_flames.ogg,LEAPING FLAMES!

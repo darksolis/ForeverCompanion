@@ -1,0 +1,3 @@
+local FC=_G.ForeverCompanion
+function FC:AddJournal(kind,text,data) if not self.db or not self.db.memory then return end;local j=self.db.memory.journal;j[#j+1]={at=time(),kind=kind,text=text,data=data};while #j>250 do table.remove(j,1) end;if self.RefreshJournal then self:RefreshJournal() end end
+function FC:JournalLines(limit) local j=self.db.memory.journal or {};local out={};for i=#j,math.max(1,#j-(limit or 40)+1),-1 do local e=j[i];local stamp=date and date("%b %d %H:%M",e.at or time()) or "";out[#out+1]=stamp.."  |cff9ca3b5"..(e.kind or "memory").."|r\n"..(e.text or "") end;if #out==0 then out[1]="No memories yet. Go make some." end;return out end
