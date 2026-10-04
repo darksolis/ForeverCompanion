@@ -541,11 +541,10 @@ function FC:OnDungeonEnter(name)
     }
 
     -- Remove stale town/quest-reminder chatter that was queued before zoning in.
-    for i = #(self.state.queue or {}), 1, -1 do
-        local item = self.state.queue[i]
-        local topic = item and item.meta and item.meta.topic
-        if topic == "questpile" or topic == "questlevel" or topic == "queststalled" or topic == "traveltime" or topic == "bags" or topic == "repair" then
-            table.remove(self.state.queue, i)
+    -- Use the queue helper so a dropped line does not leave its long cooldown behind.
+    if self.DropQueuedTopic then
+        for _, topic in ipairs({ "questpile", "questlevel", "queststalled", "traveltime", "bags", "repair", "auction", "bank", "mail", "trade", "barber" }) do
+            self:DropQueuedTopic(topic)
         end
     end
 
@@ -606,7 +605,7 @@ function FC:OnDungeonBossKill(encounterID, encounterName)
         text,
         "celebrate", 30, 20, "dungeonbossloot", false,
         function() return FC:IsDungeonContext() end,
-        { topic = "dungeonboss", category = "group", reason = "boss defeated" }
+        { topic = "dungeonboss", category = "group", reason = "boss defeated", maxAge = 14, minGap = 0.6, preempt = true }
     )
 end
 
@@ -630,14 +629,18 @@ function FC:OnDungeonEncounterStart(encounterID, encounterName)
 
     local text = "Boss pull: " .. tostring(encounterName or "encounter") .. "."
     if best then text = text .. " Best class-compatible drop I'm watching here is " .. self:FormatDungeonLootItem(best) .. "." end
-    self:QueueSay(text, "think", 32, 120, "dungeonbossstart:" .. tostring(encounterName), false,
-        function() return FC:IsDungeonContext() end,
-        { topic = "dungeonbossstart", category = "group", reason = "boss encounter started" })
+    self:QueueSay(text, "think", 72, 120, "dungeonbossstart:" .. tostring(encounterName), false,
+        function()
+            return FC:IsDungeonContext() and FC.state.dungeon and FC.state.dungeon.currentBoss == encounterName
+        end,
+        { topic = "dungeonbossstart", category = "group", reason = "boss encounter started", maxAge = 8, minGap = 0.5, preempt = true })
 end
 
 function FC:OnDungeonEncounterEnd(encounterID, encounterName, success)
     if not self:IsDungeonContext() then return end
     self.state.dungeon = self.state.dungeon or { killedBosses = {}, bossKills = 0, wipes = 0 }
+    self.state.dungeon.currentBoss = nil
+    if self.DropQueuedTopic then self:DropQueuedTopic("dungeonbossstart") end
     if tonumber(success) == 1 then
         self:OnDungeonBossKill(encounterID, encounterName)
     else
@@ -646,7 +649,7 @@ function FC:OnDungeonEncounterEnd(encounterID, encounterName, success)
             "That was a wipe on " .. tostring(encounterName or "the encounter") .. ". Reset, tighten it up, and go again.",
             "worried", 35, 45, "dungeonwipe:" .. tostring(encounterName), false,
             function() return FC:IsDungeonContext() end,
-            { topic = "dungeonwipe", category = "combat", reason = "encounter wipe" }
+            { topic = "dungeonwipe", category = "combat", reason = "encounter wipe", maxAge = 10, minGap = 0.6, preempt = true }
         )
     end
 end

@@ -58,7 +58,9 @@ local registeredEvents = {
     "AUCTION_HOUSE_SHOW",
     "AUCTION_HOUSE_CLOSED",
     "TRADE_SHOW",
+    "TRADE_CLOSED",
     "BARBER_SHOP_OPEN",
+    "BARBER_SHOP_CLOSE",
     "UI_ERROR_MESSAGE",
     "DELETE_ITEM_CONFIRM",
     "CONFIRM_TALENT_WIPE",
@@ -268,6 +270,7 @@ local function coreEvent(event, ...)
             FC.state.procAlerts.auras = {}
         end
         FC:RebuildProcActionMap()
+        if FC.ScanProcSupport then FC:ScanProcSupport() end
 
     elseif event == "ACTIONBAR_UPDATE_USABLE" then
         FC:CheckActionBarProcs()

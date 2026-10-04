@@ -1,3 +1,25 @@
+# v0.9.48 RC43 — Deep Variety / Anti-Repetition Pass
+
+- Replaced the old small-pool fallback that could repeatedly choose the first line after exhausting a topic.
+- Added least-used-first dialogue rotation with per-topic exposure tracking and global recent-line suppression.
+- Expanded recent topic memory from 7 to 18 topics and added session-wide topic exposure weighting.
+- Added a large reactive-vocabulary expansion for eating, drinking, mounting, dismounting, AH, bank, mail, trade, stealth, AFK, hearth, swimming, resting, resources, bags, repairs, death, loot, skills, pets, and more.
+- Added stronger cooldown floors for repetitive low-information behaviors so Vexa does not comment every single time.
+- Added `/fc variety` to report high-frequency reaction-pool sizes.
+
+# v0.9.47 RC42 — Reaction Timing Pass
+
+- Added queue expiration so event reactions cannot surface long after their trigger.
+- Added per-topic freshness windows and response-gap overrides for reactive gameplay events.
+- Auction House, bank, mail, trade, barber, ready checks, danger warnings, resource warnings, loot, level-ups, and other short-lived reactions now get prompt priority.
+- AH/bank/mail/trade/barber lines are revalidated against live UI state and removed immediately when the related window closes.
+- Fresh high-priority reactions can interrupt stale ambient/reflective speech instead of waiting behind it.
+- State-based ambient chatter now validates movement, zone, travel, town, resting, dungeon, and farming context before speaking.
+- Quest-complete comments are discarded if the quest was already turned in before Vexa could speak.
+- Dungeon boss-pull callouts expire quickly and are canceled when the encounter ends.
+- Dropped stale queue items release their cooldown so valid future reactions are not suppressed.
+- Added `/fc timing` (or `/fc queue`) to inspect pending speech age and remaining TTL.
+
 # v0.9.44 RC39
 
 - Added full prerecorded Vexa event voice-pack subsystem.

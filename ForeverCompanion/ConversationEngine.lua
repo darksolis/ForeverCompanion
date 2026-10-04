@@ -69,10 +69,17 @@ function FC:ConversationTopicAllowed(topic)
 end
 
 function FC:RememberConversationTopic(topic)
+    local now = GetTime()
     self.state.recentConversationTopics = self.state.recentConversationTopics or {}
     local recent = self.state.recentConversationTopics
     recent[#recent + 1] = topic
-    while #recent > 7 do table.remove(recent, 1) end
+    while #recent > 18 do table.remove(recent, 1) end
+
+    self.state.conversationTopicUsage = self.state.conversationTopicUsage or {}
+    local stat = self.state.conversationTopicUsage[topic] or { count = 0, lastAt = 0 }
+    stat.count = (stat.count or 0) + 1
+    stat.lastAt = now
+    self.state.conversationTopicUsage[topic] = stat
 end
 
 function FC:ConversationTopicRecentlyUsed(topic)
@@ -80,6 +87,51 @@ function FC:ConversationTopicRecentlyUsed(topic)
         if recent == topic then return true end
     end
     return false
+end
+
+-- BuildConversationChoices encodes a topic's base importance by inserting duplicate rows.
+-- Collapse those duplicates here, then apply a novelty penalty to topics that have already
+-- dominated this session. Context still matters, but unused categories get a real chance.
+function FC:ChooseConversationChoice(choices)
+    if not choices or #choices == 0 then return nil end
+    self.state.conversationTopicUsage = self.state.conversationTopicUsage or {}
+
+    local grouped, order = {}, {}
+    for _, choice in ipairs(choices) do
+        local key = tostring(choice.topic)
+        local entry = grouped[key]
+        if not entry then
+            entry = { topic = choice.topic, data = choice.data, baseWeight = 0 }
+            grouped[key] = entry
+            order[#order + 1] = entry
+        end
+        entry.baseWeight = entry.baseWeight + 1
+    end
+
+    local now = GetTime()
+    local total = 0
+    for _, entry in ipairs(order) do
+        local stat = self.state.conversationTopicUsage[entry.topic] or { count = 0, lastAt = 0 }
+        local count = tonumber(stat.count) or 0
+        local since = now - (tonumber(stat.lastAt) or 0)
+        local novelty = 1 / (1 + count * 0.75)
+        if count == 0 then novelty = novelty * 2.4 end
+        local recency = 1
+        if since < 120 then recency = 0.15
+        elseif since < 300 then recency = 0.45
+        elseif since < 600 then recency = 0.75 end
+        entry.weight = math.max(0.01, entry.baseWeight * novelty * recency)
+        total = total + entry.weight
+    end
+
+    if total <= 0 then return order[math.random(1, #order)] end
+    local roll = math.random() * total
+    local running = 0
+    for _, entry in ipairs(order) do
+        running = running + entry.weight
+        if roll <= running then return entry end
+    end
+    return order[#order]
 end
 
 function FC:BuildConversationChoices()
@@ -247,7 +299,8 @@ function FC:MaybeConversation(force)
 
     local choices = self:BuildConversationChoices()
     if #choices == 0 then return false end
-    local choice = choices[math.random(1, #choices)]
+    local choice = self:ChooseConversationChoice(choices)
+    if not choice then return false end
     self:RememberConversationTopic(choice.topic)
 
     if choice.topic == "riddle" and type(self.StartRiddle) == "function" then

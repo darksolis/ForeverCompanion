@@ -28,7 +28,137 @@ local categoryMinimums = {
     social = 20,
     ambient = 8,
     memory = 20,
+    learning = 6,
 }
+
+-- Reaction timing policy. Event-driven comments should feel immediate and then disappear
+-- if the moment has passed. Ambient/reflective dialogue may live longer in the queue.
+local categoryMaxAge = {
+    warning = 6,
+    combat = 14,
+    xp = 45,
+    quests = 30,
+    group = 18,
+    loot = 18,
+    gold = 30,
+    target = 7,
+    class = 8,
+    world = 18,
+    social = 18,
+    ambient = 90,
+    memory = 120,
+    learning = 180,
+}
+
+local topicTiming = {
+    -- Immediate UI / town interactions.
+    auction = { maxAge = 7, minGap = 0.8, priorityFloor = 76, preempt = true },
+    bank = { maxAge = 7, minGap = 1.0, priorityFloor = 64, preempt = true },
+    mail = { maxAge = 8, minGap = 1.0, priorityFloor = 60, preempt = true },
+    trade = { maxAge = 7, minGap = 1.0, priorityFloor = 60, preempt = true },
+    barber = { maxAge = 8, minGap = 1.0, priorityFloor = 55, preempt = true },
+    repaired = { maxAge = 8, minGap = 0.8, priorityFloor = 38, preempt = true },
+    nomoney = { maxAge = 6, minGap = 0.5, priorityFloor = 55, preempt = true },
+
+    -- Combat / danger moments.
+    lowhealth = { maxAge = 4, minGap = 0.25, priorityFloor = 86, preempt = true },
+    manalow = { maxAge = 5, minGap = 0.4, priorityFloor = 70, preempt = true },
+    ragecap = { maxAge = 5, minGap = 0.5, priorityFloor = 58, preempt = true },
+    energycap = { maxAge = 5, minGap = 0.5, priorityFloor = 58, preempt = true },
+    targetdanger = { maxAge = 5, minGap = 0.5, priorityFloor = 66, preempt = true },
+    targetelite = { maxAge = 6, minGap = 0.8, priorityFloor = 48, preempt = true },
+    broken = { maxAge = 7, minGap = 0.5, priorityFloor = 70, preempt = true },
+    bagfull = { maxAge = 6, minGap = 0.6, priorityFloor = 62, preempt = true },
+    hearthcombat = { maxAge = 4, minGap = 0.4, priorityFloor = 72, preempt = true },
+    readycheck = { maxAge = 6, minGap = 0.5, priorityFloor = 52, preempt = true },
+    notready = { maxAge = 6, minGap = 0.5, priorityFloor = 55, preempt = true },
+    invite = { maxAge = 7, minGap = 0.7, priorityFloor = 46, preempt = true },
+
+    -- Short-lived movement / activity states.
+    mount = { maxAge = 8, minGap = 1.0, priorityFloor = 28 },
+    dismount = { maxAge = 8, minGap = 1.0, priorityFloor = 28 },
+    flightstart = { maxAge = 10, minGap = 1.0, priorityFloor = 30 },
+    flightland = { maxAge = 10, minGap = 1.0, priorityFloor = 30 },
+    swim = { maxAge = 10, minGap = 1.0, priorityFloor = 26 },
+    shore = { maxAge = 10, minGap = 1.0, priorityFloor = 26 },
+    eat = { maxAge = 10, minGap = 1.0, priorityFloor = 24 },
+    drink = { maxAge = 10, minGap = 1.0, priorityFloor = 24 },
+    campfire = { maxAge = 14, minGap = 1.5, priorityFloor = 22 },
+    stealth = { maxAge = 10, minGap = 0.8, priorityFloor = 30 },
+    restenter = { maxAge = 12, minGap = 1.2, priorityFloor = 24 },
+    afk = { maxAge = 12, minGap = 1.0, priorityFloor = 24 },
+    afkreturn = { maxAge = 8, minGap = 0.7, priorityFloor = 38, preempt = true },
+    dnd = { maxAge = 12, minGap = 1.0, priorityFloor = 22 },
+    dndreturn = { maxAge = 8, minGap = 0.8, priorityFloor = 34 },
+    hearth = { maxAge = 7, minGap = 0.8, priorityFloor = 38 },
+
+    -- Rewards/progress should be prompt but may wait a few seconds for danger to clear.
+    lootepic = { maxAge = 15, minGap = 0.7, priorityFloor = 74, preempt = true },
+    lootrare = { maxAge = 14, minGap = 1.0, priorityFloor = 50 },
+    upgrade = { maxAge = 16, minGap = 1.0, priorityFloor = 48 },
+    questdone = { maxAge = 22, minGap = 1.2, priorityFloor = 44 },
+    level = { maxAge = 20, minGap = 0.5, priorityFloor = 90, preempt = true },
+    revive = { maxAge = 14, minGap = 0.8, priorityFloor = 52 },
+    death = { maxAge = 18, minGap = 0.5, priorityFloor = 84, preempt = true },
+    deathpattern = { maxAge = 18, minGap = 0.5, priorityFloor = 88, preempt = true },
+    bosskill = { maxAge = 18, minGap = 0.6, priorityFloor = 78, preempt = true },
+    pvpkill = { maxAge = 10, minGap = 0.8, priorityFloor = 48 },
+    bgwin = { maxAge = 25, minGap = 0.8, priorityFloor = 70 },
+    bgloss = { maxAge = 25, minGap = 0.8, priorityFloor = 70 },
+
+    -- Zone/group transitions are meaningful, but stale versions are confusing.
+    zone = { maxAge = 24, minGap = 1.0, priorityFloor = 36 },
+    capital = { maxAge = 20, minGap = 1.0, priorityFloor = 30 },
+    instanceenter = { maxAge = 20, minGap = 0.8, priorityFloor = 62 },
+    instanceleavewin = { maxAge = 20, minGap = 0.8, priorityFloor = 58 },
+    instanceleavefail = { maxAge = 20, minGap = 0.8, priorityFloor = 58 },
+    bgenter = { maxAge = 18, minGap = 0.8, priorityFloor = 54 },
+    rolechange = { maxAge = 15, minGap = 1.0, priorityFloor = 36 },
+
+    -- Tiny moments should either land quickly or not at all.
+    crit = { maxAge = 3, minGap = 0.7, priorityFloor = 24 },
+    healcrit = { maxAge = 3, minGap = 0.7, priorityFloor = 24 },
+    combatwin = { maxAge = 10, minGap = 0.8, priorityFloor = 34 },
+    combatquick = { maxAge = 10, minGap = 0.8, priorityFloor = 36 },
+    combatlong = { maxAge = 12, minGap = 0.8, priorityFloor = 38 },
+    destroy = { maxAge = 6, minGap = 0.8, priorityFloor = 30 },
+    destroyvaluable = { maxAge = 6, minGap = 0.5, priorityFloor = 68, preempt = true },
+    pet = { maxAge = 10, minGap = 1.0, priorityFloor = 28 },
+    talents = { maxAge = 15, minGap = 1.0, priorityFloor = 32 },
+    talentupdate = { maxAge = 12, minGap = 1.0, priorityFloor = 34 },
+    skillup = { maxAge = 15, minGap = 1.0, priorityFloor = 30 },
+    longfall = { maxAge = 6, minGap = 0.7, priorityFloor = 30 },
+    jumpstreak = { maxAge = 6, minGap = 1.0, priorityFloor = 24 },
+    jumpmilestone = { maxAge = 14, minGap = 0.8, priorityFloor = 40 },
+    zonebetter = { maxAge = 20, minGap = 1.0, priorityFloor = 34 },
+    nearlevel = { maxAge = 20, minGap = 1.0, priorityFloor = 34 },
+    questlevel = { maxAge = 20, minGap = 1.0, priorityFloor = 42 },
+    idle = { maxAge = 10, minGap = 1.0, priorityFloor = 24 },
+    comeback = { maxAge = 8, minGap = 0.7, priorityFloor = 40 },
+}
+
+local topicRepeatFloor = {
+    -- Low-information behaviors should not comment every time the player repeats them.
+    eat = 480, drink = 480, campfire = 900,
+    mount = 150, dismount = 150, swim = 240, shore = 240,
+    stealth = 150, restenter = 480,
+    afk = 300, afkreturn = 180, dnd = 600, dndreturn = 300,
+    hearth = 240, mail = 300, bank = 300, auction = 300, trade = 240, barber = 900,
+    pet = 300, talents = 300, talentupdate = 240, skillup = 180,
+    ragecap = 90, energycap = 90, manalow = 75,
+    jumpstreak = 75, longfall = 90,
+    targetelite = 90, targetdanger = 75,
+    bags = 240, bagfull = 150, repair = 300, repaired = 180, broken = 90,
+    readycheck = 90, notready = 90,
+}
+
+local function repeatFloorForTopic(topic)
+    return topicRepeatFloor[topic] or 0
+end
+
+local function timingForTopic(topic, category)
+    return topicTiming[topic] or { maxAge = categoryMaxAge[category] or 45 }
+end
 
 local function categoryForTopic(topic)
     local category = topicCategory[topic]
@@ -65,37 +195,91 @@ local function recentlyUsed(FC, topic, line)
     return false
 end
 
+local function globallyRecent(FC, line)
+    for _, used in ipairs(FC.state.globalRecentDialogue or {}) do
+        if used == line then return true end
+    end
+    return false
+end
+
+local function dialogueUsage(FC, topic, line)
+    FC.state.dialogueUsage = FC.state.dialogueUsage or {}
+    FC.state.dialogueUsage[topic] = FC.state.dialogueUsage[topic] or {}
+    local stat = FC.state.dialogueUsage[topic][line]
+    if not stat then
+        stat = { count = 0, lastAt = 0 }
+        FC.state.dialogueUsage[topic][line] = stat
+    end
+    return stat
+end
+
 local function rememberLine(FC, topic, line)
+    local now = GetTime and GetTime() or 0
     FC.state.recentDialogue = FC.state.recentDialogue or {}
     local recent = FC.state.recentDialogue[topic] or {}
     recent[#recent + 1] = line
-    while #recent > 12 do table.remove(recent, 1) end
+    while #recent > 24 do table.remove(recent, 1) end
     FC.state.recentDialogue[topic] = recent
+
+    FC.state.globalRecentDialogue = FC.state.globalRecentDialogue or {}
+    FC.state.globalRecentDialogue[#FC.state.globalRecentDialogue + 1] = line
+    while #FC.state.globalRecentDialogue > 60 do table.remove(FC.state.globalRecentDialogue, 1) end
+
+    local stat = dialogueUsage(FC, topic, line)
+    stat.count = (stat.count or 0) + 1
+    stat.lastAt = now
 end
 
+-- Prefer unseen lines first, then least-seen lines, then the line that has been absent
+-- the longest. This prevents tiny pools from collapsing into their first entry once every
+-- line has been seen, while still allowing favorites to get a mild tie-break advantage.
 local function pick(FC, topic, pool)
     if not pool or #pool == 0 then return nil end
     local blocked = FC.db and FC.db.sharedMemory and FC.db.sharedMemory.blockedLines or {}
     local favorites = FC.db and FC.db.sharedMemory and FC.db.sharedMemory.favoriteLines or {}
-    local line
-    if math.random() < 0.20 then
-        local favPool = {}
-        for _, candidate in ipairs(pool) do
-            if favorites[candidate] and not blocked[candidate] and not recentlyUsed(FC, topic, candidate) then favPool[#favPool + 1] = candidate end
+    local eligible = {}
+    local minCount = nil
+
+    for _, candidate in ipairs(pool) do
+        if candidate and not blocked[candidate] then
+            local stat = dialogueUsage(FC, topic, candidate)
+            local count = tonumber(stat.count) or 0
+            if minCount == nil or count < minCount then minCount = count end
+            eligible[#eligible + 1] = { line = candidate, count = count, lastAt = tonumber(stat.lastAt) or 0 }
         end
-        if #favPool > 0 then line = favPool[math.random(1, #favPool)] end
     end
-    for _ = 1, 20 do
-        if line then break end
-        local candidate = pool[math.random(1, #pool)]
-        if not blocked[candidate] and not recentlyUsed(FC, topic, candidate) then line = candidate break end
+    if #eligible == 0 then return nil end
+
+    local tier = {}
+    for _, item in ipairs(eligible) do
+        if item.count == minCount then tier[#tier + 1] = item end
     end
-    if not line then
-        for _, candidate in ipairs(pool) do if not blocked[candidate] then line = candidate break end end
+
+    -- Within the least-used tier, avoid recent topic/global repeats whenever possible.
+    local fresh = {}
+    for _, item in ipairs(tier) do
+        if not recentlyUsed(FC, topic, item.line) and not globallyRecent(FC, item.line) then
+            fresh[#fresh + 1] = item
+        end
     end
-    if not line then return nil end
-    rememberLine(FC, topic, line)
-    return line
+    if #fresh > 0 then tier = fresh end
+
+    -- Favor the oldest half of the remaining tier. This creates natural rotation without
+    -- making every session deterministic.
+    table.sort(tier, function(a, b)
+        if a.lastAt == b.lastAt then
+            local af = favorites[a.line] and 1 or 0
+            local bf = favorites[b.line] and 1 or 0
+            if af ~= bf then return af > bf end
+            return tostring(a.line) < tostring(b.line)
+        end
+        return a.lastAt < b.lastAt
+    end)
+    local oldestCount = math.max(1, math.ceil(#tier * 0.5))
+    local choice = tier[math.random(1, oldestCount)]
+    if not choice then return nil end
+    rememberLine(FC, topic, choice.line)
+    return choice.line
 end
 
 function FC:GetLine(topic, data)
@@ -181,6 +365,13 @@ function FC:QueueTopic(topic, data, priority, cooldown, force, validator)
     if self.db and self.db.mutedCategories and self.db.mutedCategories[category] and (priority or 0) < 70 then return end
     local weight = commentaryWeight(self, category)
     if not force and (priority or 0) < 70 and weight < 1 and math.random() > weight then return end
+
+    local timing = timingForTopic(topic, category)
+    priority = math.max(priority or 10, timing.priorityFloor or 0)
+    if not force then
+        cooldown = math.max(tonumber(cooldown) or 0, repeatFloorForTopic(topic))
+    end
+
     local text = self:GetLine(topic, data)
     if not text then return end
     local facts = type(self.CaptureFacts) == "function" and self:CaptureFacts("queue:" .. tostring(topic)) or nil
@@ -202,7 +393,18 @@ function FC:QueueTopic(topic, data, priority, cooldown, force, validator)
         facts = facts,
         category = category,
         reason = topic,
+        maxAge = timing.maxAge,
+        minGap = timing.minGap,
+        preempt = timing.preempt == true,
+        reactive = timing.minGap ~= nil or timing.preempt == true,
     })
+end
+
+local function releaseQueuedCooldown(FC, item)
+    if not item or not item.key then return end
+    if FC.state.cooldowns and FC.state.cooldowns[item.key] == item.at then
+        FC.state.cooldowns[item.key] = nil
+    end
 end
 
 function FC:QueueSay(text, anim, priority, cooldown, key, force, validator, meta)
@@ -210,25 +412,52 @@ function FC:QueueSay(text, anim, priority, cooldown, key, force, validator, meta
     key = key or text
     local now = GetTime()
     if not force and now - (self.state.cooldowns[key] or -99999) < (cooldown or 0) then return end
-    self.state.cooldowns[key] = now
+
     meta = meta or { topic = key, category = categoryForTopic(key), facts = type(self.CaptureFacts) == "function" and self:CaptureFacts("queue:" .. tostring(key)) or nil }
-    table.insert(self.state.queue, { text = text, anim = anim or "talk", priority = priority or 10, at = now, validator = validator, meta = meta })
-    table.sort(self.state.queue, function(a, b) return a.priority > b.priority end)
-    while #self.state.queue > 20 do table.remove(self.state.queue) end
+    local category = meta.category or categoryForTopic(key)
+    local timing = timingForTopic(meta.topic or key, category)
+    if meta.maxAge == nil then meta.maxAge = timing.maxAge or categoryMaxAge[category] or 45 end
+    if meta.minGap == nil then meta.minGap = timing.minGap end
+    if meta.preempt == nil then meta.preempt = timing.preempt == true end
+    meta.enqueuedAt = now
+
+    self.state.cooldowns[key] = now
+    table.insert(self.state.queue, {
+        text = text,
+        anim = anim or "talk",
+        priority = priority or 10,
+        at = now,
+        expiresAt = now + math.max(1, tonumber(meta.maxAge) or 45),
+        validator = validator,
+        meta = meta,
+        key = key,
+        force = force == true,
+    })
+    table.sort(self.state.queue, function(a, b)
+        if a.priority == b.priority then return (a.at or 0) > (b.at or 0) end
+        return a.priority > b.priority
+    end)
+    while #self.state.queue > 20 do
+        local removed = table.remove(self.state.queue)
+        releaseQueuedCooldown(self, removed)
+    end
 end
 
-function FC:CanSpeak(priority, category)
+function FC:CanSpeak(priority, category, meta)
     local runtime = self.state.runtime or {}
     if (runtime.cinematic or runtime.loading) and (priority or 0) < 90 then return false end
+
     local base = 10 + (1 - (self.db.chatty or 0.5)) * 40
     if category == "warning" then base = 1.25
     elseif (priority or 0) >= 80 then base = 1.25
     elseif (priority or 0) <= 10 then base = base * 1.25 end
+    if meta and tonumber(meta.minGap) then base = math.min(base, math.max(0.15, tonumber(meta.minGap))) end
     if GetTime() - (self.state.lastSpeak or 0) < base then return false end
 
     category = category or "ambient"
     self.state.categoryLastSpeak = self.state.categoryLastSpeak or {}
     local categoryGap = categoryMinimums[category] or 12
+    if meta and tonumber(meta.minGap) then categoryGap = math.min(categoryGap, math.max(0.15, tonumber(meta.minGap))) end
     if GetTime() - (self.state.categoryLastSpeak[category] or -99999) < categoryGap then return false end
 
     local mode = self.state.contextMode or "unknown"
@@ -241,10 +470,23 @@ end
 
 function FC:Say(text, anim, priority, force, meta)
     local category = meta and meta.category or "direct"
-    if not text or (not force and not self:CanSpeak(priority, category)) then return false end
+    if not text or (not force and not self:CanSpeak(priority, category, meta)) then return false end
+
+    -- A fresh high-value reaction may interrupt old ambient/reflective dialogue. This keeps
+    -- event commentary tied to the event instead of surfacing tens of seconds later.
+    if meta and meta.preempt and self.bubble and self.bubble:IsShown() then
+        local currentPriority = tonumber(self.state.currentSpeechPriority) or 0
+        if (priority or 0) > currentPriority then
+            if self.CancelBubbleSequence then self:CancelBubbleSequence() end
+            self.bubble:Hide()
+        end
+    end
+
     self.state.lastSpeak = GetTime()
     self.state.categoryLastSpeak = self.state.categoryLastSpeak or {}
     self.state.categoryLastSpeak[category] = GetTime()
+    self.state.currentSpeechPriority = priority or 0
+    self.state.currentSpeechMeta = meta
     self:SetAnimation(anim or "talk")
     self:ShowBubble(text)
     if meta and meta.topic and type(self.MaybePlayVexaVoiceForTopic) == "function" then
@@ -255,18 +497,61 @@ function FC:Say(text, anim, priority, force, meta)
 end
 
 function FC:PumpQueue()
-    while #self.state.queue > 0 do
-        local nextItem = self.state.queue[1]
-        if nextItem.validator then
-            local ok, valid = pcall(nextItem.validator)
-            if not ok or not valid then table.remove(self.state.queue, 1) else break end
-        else break end
+    local now = GetTime()
+
+    -- Purge expired or no-longer-true statements anywhere in the queue, not only at the head.
+    -- This is the key safeguard against an AH/bank/mount/etc. line appearing long after the event.
+    for i = #self.state.queue, 1, -1 do
+        local item = self.state.queue[i]
+        local expired = item.expiresAt and now > item.expiresAt
+        local valid = true
+        if not expired and item.validator then
+            local ok, result = pcall(item.validator)
+            valid = ok and result == true
+        end
+        if expired or not valid then
+            table.remove(self.state.queue, i)
+            releaseQueuedCooldown(self, item)
+        end
     end
+
+    if #self.state.queue == 0 then return end
+    table.sort(self.state.queue, function(a, b)
+        if a.priority == b.priority then return (a.at or 0) > (b.at or 0) end
+        return a.priority > b.priority
+    end)
+
     local nextItem = self.state.queue[1]
     local category = nextItem and nextItem.meta and nextItem.meta.category or "ambient"
-    if nextItem and self:CanSpeak(nextItem.priority, category) then
+    if nextItem and self:CanSpeak(nextItem.priority, category, nextItem.meta) then
         table.remove(self.state.queue, 1)
         self:Say(nextItem.text, nextItem.anim, nextItem.priority, true, nextItem.meta)
+    end
+end
+
+function FC:DropQueuedTopic(topic)
+    if not topic then return 0 end
+    local removed = 0
+    for i = #(self.state.queue or {}), 1, -1 do
+        local item = self.state.queue[i]
+        local itemTopic = item.meta and item.meta.topic or item.key
+        if itemTopic == topic then
+            table.remove(self.state.queue, i)
+            releaseQueuedCooldown(self, item)
+            removed = removed + 1
+        end
+    end
+    return removed
+end
+
+function FC:TimingDiagnostics()
+    local now = GetTime()
+    self:Debug("Timing queue: " .. tostring(#(self.state.queue or {})) .. " pending item(s).")
+    for i, item in ipairs(self.state.queue or {}) do
+        local topic = item.meta and item.meta.topic or item.key or "?"
+        local age = now - (item.at or now)
+        local ttl = item.expiresAt and math.max(0, item.expiresAt - now) or -1
+        self:Debug(string.format("  %d. %s | p=%d | age=%.1fs | ttl=%.1fs", i, tostring(topic), tonumber(item.priority) or 0, age, ttl))
     end
 end
 

@@ -238,15 +238,30 @@ function FC:GetProcDefinition(spellName, token)
     return nil
 end
 
-function FC:GetProcCatalogText(token)
+function FC:GetProcCatalogText(token, includeUnsupported)
     token = token or classToken()
-    local list = PROC_CATALOG[token] or {}
+    local list
+    if includeUnsupported then
+        list = PROC_CATALOG[token] or {}
+    elseif type(self.GetSupportedProcDefinitions) == "function" then
+        list = self:GetSupportedProcDefinitions(token)
+    else
+        list = PROC_CATALOG[token] or {}
+    end
     if #list == 0 then
-        return "No class-specific fallback list is needed here. Any client spell-activation overlay can still be announced automatically."
+        if includeUnsupported then
+            return "No class-specific catalog entries are defined for this class."
+        end
+        return "No class proc abilities have been detected on this character yet. Put learned abilities on your bars or use /fc proc scan after the spellbook is ready. Overlay procs can still be learned live."
     end
     local lines = {}
     for _, def in ipairs(list) do
-        lines[#lines + 1] = "• " .. tostring((def.names or {})[1] or "Proc")
+        local name = tostring((def.names or {})[1] or "Proc")
+        if not includeUnsupported and self.state and self.state.procAlerts and self.state.procAlerts.supportReasons then
+            local reason = self.state.procAlerts.supportReasons[norm(name)]
+            if reason then name = name .. "  [" .. tostring(reason) .. "]" end
+        end
+        lines[#lines + 1] = "• " .. name
     end
     return table.concat(lines, "\n")
 end
@@ -704,6 +719,7 @@ function FC:TriggerProcBySpell(spellID, source)
     local token = classToken()
     local def = self:GetProcDefinition(spellName, token)
     local cfg = self.db and self.db.procAlerts or {}
+    if def then self:MarkProcDefinitionSupported(def, source or "live proc") end
     if not def and cfg.anyOverlay == false then return false end
     return self:ShowProcAlert(spellName, pickShout(def, spellName), spellID, source or "proc")
 end
@@ -839,13 +855,158 @@ local function auraStacks(name)
     return nil
 end
 
+
+local function knownSpellID(spellID)
+    if not spellID then return false end
+    local checks = {}
+    if type(IsPlayerSpell) == "function" then checks[#checks + 1] = IsPlayerSpell end
+    if type(IsSpellKnown) == "function" then checks[#checks + 1] = IsSpellKnown end
+    if type(IsSpellKnownOrOverridesKnown) == "function" then checks[#checks + 1] = IsSpellKnownOrOverridesKnown end
+    for _, fn in ipairs(checks) do
+        local ok, value = pcall(fn, spellID)
+        if ok and (value == true or value == 1) then return true end
+    end
+    if C_SpellBook and type(C_SpellBook.IsSpellInSpellBook) == "function" then
+        local bank = Enum and Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Player or nil
+        local ok, value = pcall(C_SpellBook.IsSpellInSpellBook, spellID, bank)
+        if ok and (value == true or value == 1) then return true end
+    end
+    return false
+end
+
+local function resolveSpellByName(name)
+    if not name or name == "" then return nil, nil end
+    if C_Spell and type(C_Spell.GetSpellInfo) == "function" then
+        local ok, info = pcall(C_Spell.GetSpellInfo, name)
+        if ok and type(info) == "table" and info.name then
+            return info.name, info.spellID
+        end
+    end
+    if type(GetSpellInfo) == "function" then
+        local ok, spellName, _, _, _, _, _, spellID = pcall(GetSpellInfo, name)
+        if ok and spellName then return spellName, spellID end
+    end
+    return nil, nil
+end
+
+local function scanLegacySpellBookNames()
+    local names = {}
+    if type(GetNumSpellTabs) ~= "function" or type(GetSpellTabInfo) ~= "function" or type(GetSpellBookItemName) ~= "function" then
+        return names
+    end
+    local okTabs, tabs = pcall(GetNumSpellTabs)
+    tabs = okTabs and tonumber(tabs) or 0
+    local bookType = BOOKTYPE_SPELL or "spell"
+    for tab = 1, tabs do
+        local ok, _, _, offset, numSpells = pcall(GetSpellTabInfo, tab)
+        if ok then
+            offset = tonumber(offset) or 0
+            numSpells = tonumber(numSpells) or 0
+            for index = offset + 1, offset + numSpells do
+                local nok, spellName = pcall(GetSpellBookItemName, index, bookType)
+                if nok and type(spellName) == "string" and spellName ~= "" then
+                    names[norm(spellName)] = true
+                end
+            end
+        end
+    end
+    return names
+end
+
+function FC:MarkProcDefinitionSupported(def, reason)
+    if not def then return end
+    local pstate = ensureProcState(self)
+    pstate.supported = pstate.supported or {}
+    pstate.supportReasons = pstate.supportReasons or {}
+    local key = norm((def.names or {})[1] or "")
+    if key == "" then return end
+    pstate.supported[key] = true
+    if reason and not pstate.supportReasons[key] then pstate.supportReasons[key] = reason end
+end
+
+function FC:ScanProcSupport()
+    local pstate = ensureProcState(self)
+    pstate.supported = {}
+    pstate.supportReasons = {}
+
+    local actionNames = {}
+    if type(GetActionInfo) == "function" then
+        for slot = 1, 180 do
+            local spellName = actionSpell(slot)
+            if spellName then actionNames[norm(spellName)] = true end
+        end
+    end
+    local bookNames = scanLegacySpellBookNames()
+    local token = classToken()
+    local count = 0
+
+    for _, def in ipairs(PROC_CATALOG[token] or {}) do
+        local supported, reason = false, nil
+        for _, alias in ipairs(def.names or {}) do
+            local key = norm(alias)
+            if actionNames[key] then
+                supported, reason = true, "action bar"
+                break
+            end
+            if bookNames[key] then
+                supported, reason = true, "spellbook"
+                break
+            end
+            local _, spellID = resolveSpellByName(alias)
+            if spellID and knownSpellID(spellID) then
+                supported, reason = true, "known spell"
+                break
+            end
+        end
+
+        -- Some procs are passive auras rather than clickable spells. If the client
+        -- ever shows the aura, that is definitive proof the proc exists here.
+        if not supported and def.triggers and def.triggers.aura then
+            for _, alias in ipairs(def.names or {}) do
+                if auraStacks(alias) then
+                    supported, reason = true, "active aura"
+                    break
+                end
+            end
+        end
+
+        if supported then
+            self:MarkProcDefinitionSupported(def, reason)
+            count = count + 1
+        end
+    end
+    pstate.supportScanAt = type(GetTime) == "function" and GetTime() or 0
+    return count
+end
+
+function FC:IsProcDefinitionSupported(def)
+    if not def then return false end
+    local cfg = self.db and self.db.procAlerts or {}
+    if cfg.strictClientDetection == false then return true end
+    local pstate = ensureProcState(self)
+    if not pstate.supported then self:ScanProcSupport() end
+    local key = norm((def.names or {})[1] or "")
+    return pstate.supported and pstate.supported[key] == true
+end
+
+function FC:GetSupportedProcDefinitions(token)
+    token = token or classToken()
+    local pstate = ensureProcState(self)
+    if not pstate.supported then self:ScanProcSupport() end
+    local out = {}
+    for _, def in ipairs(PROC_CATALOG[token] or {}) do
+        if self:IsProcDefinitionSupported(def) then out[#out + 1] = def end
+    end
+    return out
+end
+
 function FC:CheckFallbackProcs()
     local cfg = self.db and self.db.procAlerts or {}
     if cfg.enabled == false or cfg.fallbackDetection == false then return end
 
     local pstate = ensureProcState(self)
     local token = classToken()
-    local list = PROC_CATALOG[token] or {}
+    local list = self:GetSupportedProcDefinitions(token)
 
     self:CheckActionBarProcs()
 
@@ -934,15 +1095,21 @@ function FC:HandleProcCombatLog(...)
     if token == "WARRIOR" then
         if sourceGUID == playerGUID and missType == "DODGE" then
             local def = self:GetProcDefinition("Overpower", token)
-            self:ShowProcAlert("Overpower", pickShout(def, "Overpower"), nil, "enemy dodged")
+            if def and self:IsProcDefinitionSupported(def) then
+                self:ShowProcAlert("Overpower", pickShout(def, "Overpower"), nil, "enemy dodged")
+            end
         elseif destGUID == playerGUID and (missType == "DODGE" or missType == "PARRY" or missType == "BLOCK") then
             local def = self:GetProcDefinition("Revenge", token)
-            self:ShowProcAlert("Revenge", pickShout(def, "Revenge"), nil, "reactive")
+            if def and self:IsProcDefinitionSupported(def) then
+                self:ShowProcAlert("Revenge", pickShout(def, "Revenge"), nil, "reactive")
+            end
         end
     elseif token == "ROGUE" then
         if destGUID == playerGUID and missType == "PARRY" then
             local def = self:GetProcDefinition("Riposte", token)
-            self:ShowProcAlert("Riposte", pickShout(def, "Riposte"), nil, "parry")
+            if def and self:IsProcDefinitionSupported(def) then
+                self:ShowProcAlert("Riposte", pickShout(def, "Riposte"), nil, "parry")
+            end
         end
     end
 end
@@ -961,6 +1128,7 @@ function FC:InitializeProcAlerts()
     pstate.usable = {}
     pstate.auras = {}
     self:RebuildProcActionMap()
+    self:ScanProcSupport()
     local ok, result = pcall(self.CreateProcAlertUI, self)
     if not ok then
         self.state.lastProcUIError = tostring(result)
@@ -978,6 +1146,12 @@ function FC:ProcDoctor()
     self:Debug("overlayEvent=" .. tostring(self.state.eventSupport and self.state.eventSupport.SPELL_ACTIVATION_OVERLAY_GLOW_SHOW))
     self:Debug("actionUsableAPI=" .. tostring(type(IsUsableAction) == "function") .. " actionInfoAPI=" .. tostring(type(GetActionInfo) == "function"))
     self:Debug("combatLogAPI=" .. tostring(type(CombatLogGetCurrentEventInfo) == "function" or (self.state.eventSupport and self.state.eventSupport.COMBAT_LOG_EVENT_UNFILTERED)))
+    local supported = self:GetSupportedProcDefinitions(token)
+    self:Debug("strictClientDetection=" .. tostring((self.db and self.db.procAlerts and self.db.procAlerts.strictClientDetection) ~= false) .. " detectedProcs=" .. tostring(#supported))
+    for _, def in ipairs(supported) do
+        local name = tostring((def.names or {})[1] or "Proc")
+        self:Debug("  detected: " .. name .. " via " .. tostring((pstate.supportReasons or {})[norm(name)] or "live"))
+    end
     self:Debug("mappedReactiveActions=" .. tostring(#(pstate.actions or {})))
     for _, action in ipairs(pstate.actions or {}) do
         self:Debug("  slot " .. tostring(action.slot) .. ": " .. tostring(action.name) .. " usable=" .. tostring(actionUsable(action.slot)))

@@ -2,7 +2,7 @@
 ## Title: Forever Companion
 ## Notes: Context-aware animated leveling companion for WoW Forever.
 ## Author: Darktotem Stormforge
-## Version: 0.9.44-rc39
+## Version: 0.9.48-rc43
 ## SavedVariables: ForeverCompanionDB
 ## OptionalDeps: Auctionator
 ## IconTexture: Interface/AddOns/ForeverCompanion/Textures/AddonIcon.tga
@@ -16,6 +16,7 @@ ContextDialogue.lua
 ConversationPack.lua
 ConversationMegaPack.lua
 LibraryExpansion.lua
+VarietyExpansion.lua
 Lexicon.lua
 Riddles.lua
 Trivia.lua

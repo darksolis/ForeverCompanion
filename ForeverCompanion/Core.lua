@@ -1,8 +1,8 @@
 local ADDON_NAME, FC = ...
 _G.ForeverCompanion = FC
 
-FC.version = "0.9.44-rc39"
-FC.schema = 31
+FC.version = "0.9.48-rc43"
+FC.schema = 33
 FC.addonName = ADDON_NAME or "ForeverCompanion"
 FC.startTime = GetTime()
 
@@ -45,7 +45,7 @@ local memoryDefaults = {
 }
 
 local defaults = {
-    schema = 31,
+    schema = 33,
     enabled = true,
     chatty = 0.55,
     tips = true,
@@ -130,6 +130,7 @@ local defaults = {
         artSize = 300,
         anyOverlay = true,
         fallbackDetection = true,
+        strictClientDetection = true,
         onlyInCombat = false,
         showSource = false,
         scale = 1.0,
@@ -637,6 +638,7 @@ function FC:Migrate()
     if self.db.procAlerts.hdArt == nil then self.db.procAlerts.hdArt = false end
     if self.db.procAlerts.anyOverlay == nil then self.db.procAlerts.anyOverlay = true end
     if self.db.procAlerts.fallbackDetection == nil then self.db.procAlerts.fallbackDetection = true end
+    if self.db.procAlerts.strictClientDetection == nil then self.db.procAlerts.strictClientDetection = true end
     if self.db.procAlerts.onlyInCombat == nil then self.db.procAlerts.onlyInCombat = false end
     if self.db.procAlerts.showSource == nil then self.db.procAlerts.showSource = false end
     self.db.procAlerts.scale = tonumber(self.db.procAlerts.scale) or 1.0
@@ -1016,6 +1018,10 @@ SlashCmdList.FOREVERCOMPANION = function(message)
         FC:RunDoctor()
     elseif command == "why" then
         FC:WhyLastStatement()
+    elseif command == "timing" or command == "queue" then
+        if FC.TimingDiagnostics then FC:TimingDiagnostics() else FC:Debug("Timing diagnostics unavailable.") end
+    elseif command == "variety" then
+        if FC.VarietyDiagnostics then FC:VarietyDiagnostics() else FC:Debug("Variety diagnostics unavailable.") end
     elseif command == "repeat" then
         FC:RepeatLastStatement()
     elseif command == "blocklast" then
@@ -1056,9 +1062,17 @@ SlashCmdList.FOREVERCOMPANION = function(message)
         elseif sub == "on" then
             FC.db.procAlerts.enabled = true
             FC:Debug("Combat proc callouts enabled.")
-        elseif sub == "list" then
-            FC:Debug("Proc callouts for " .. tostring(select(2, UnitClass("player")) or "current class") .. ":")
+        elseif sub == "list" or sub == "supported" then
+            if FC.ScanProcSupport then FC:ScanProcSupport() end
+            FC:Debug("Detected proc callouts for " .. tostring(select(2, UnitClass("player")) or "current class") .. ":")
             for line in string.gmatch(FC:GetProcCatalogText(), "[^\n]+") do FC:Debug(line) end
+        elseif sub == "scan" then
+            local count = FC.ScanProcSupport and FC:ScanProcSupport() or 0
+            FC:Debug("Forever client scan complete. Detected " .. tostring(count) .. " supported proc entries for this character:")
+            for line in string.gmatch(FC:GetProcCatalogText(), "[^\n]+") do FC:Debug(line) end
+        elseif sub == "all" or sub == "catalog" then
+            FC:Debug("Full compatibility catalog (not proof these exist on WoW Forever or your character):")
+            for line in string.gmatch(FC:GetProcCatalogText(nil, true), "[^\n]+") do FC:Debug(line) end
         elseif sub == "doctor" or sub == "debug" then
             FC:ProcDoctor()
         elseif sub == "reset" then
@@ -1074,6 +1088,7 @@ SlashCmdList.FOREVERCOMPANION = function(message)
             FC.db.procAlerts.artSize = 300
             FC.db.procAlerts.anyOverlay = true
             FC.db.procAlerts.fallbackDetection = true
+            FC.db.procAlerts.strictClientDetection = true
             FC.db.procAlerts.onlyInCombat = false
             FC.db.procAlerts.showSource = false
             FC.db.procAlerts.scale = 1.0
@@ -1127,7 +1142,7 @@ SlashCmdList.FOREVERCOMPANION = function(message)
         elseif sub == "test" or sub == "" then
             FC:TestProcAlert(arg ~= "" and arg or nil)
         else
-            FC:Debug("/fc proc test [spell] • move • lock • resetpos • voice [next|prev|on|off] • voicepack [on|off] • voices • list • doctor • reset • on • off")
+            FC:Debug("/fc proc test [spell] • scan • list • all • move • lock • resetpos • voice [next|prev|on|off] • voicepack [on|off] • voices • doctor • reset • on • off")
         end
     elseif command == "voicepack" then
         local sub, arg = rest:match("^(%S*)%s*(.-)$")

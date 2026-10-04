@@ -360,6 +360,8 @@ function FC:QueueLoginArrival()
         category = "memory",
         reason = "session login greeting",
         facts = type(self.CaptureFacts) == "function" and self:CaptureFacts("loginarrival") or nil,
+        maxAge = 24,
+        minGap = 0.8,
     })
     return true
 end
@@ -405,6 +407,8 @@ function FC:QueueZoneArrival(zone, oldZone)
         reason = "entered a different zone",
         data = { zone = zone, oldZone = oldZone },
         facts = type(self.CaptureFacts) == "function" and self:CaptureFacts("zonearrival") or nil,
+        maxAge = 20,
+        minGap = 0.9,
     })
     return true
 end

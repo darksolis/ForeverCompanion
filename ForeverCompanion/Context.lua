@@ -126,7 +126,7 @@ function FC:UpdateContextMode()
     if readableBoolean(safe(UnitIsDeadOrGhost, "player")) == true then mode = "dead"
     elseif self.state.inCombat then mode = "combat"
     elseif runtime.onTaxi then mode = "taxi"
-    elseif runtime.merchantOpen or runtime.bankOpen or runtime.mailOpen or runtime.auctionOpen then mode = "town_chores"
+    elseif runtime.merchantOpen or runtime.bankOpen or runtime.mailOpen or runtime.auctionOpen or runtime.tradeOpen or runtime.barberOpen then mode = "town_chores"
     elseif runtime.groupInstanceActive then mode = "instance"
     elseif runtime.resting then mode = "resting"
     elseif runtime.mounted then mode = "traveling"
@@ -154,6 +154,8 @@ function FC:InitializeContext()
     runtime.bankOpen = false
     runtime.mailOpen = false
     runtime.auctionOpen = false
+    runtime.tradeOpen = false
+    runtime.barberOpen = false
     runtime.hearthAttemptAt = 0
     runtime.groupInstanceActive, runtime.instanceType, runtime.groupInstanceName = groupInstanceState()
     runtime.groupInstanceHadBossKill = false
@@ -519,12 +521,12 @@ function FC:HandleContextEvent(event, ...)
     elseif event == "PLAYER_UPDATE_RESTING" then self:HandleRestingChanged()
     elseif event == "PLAYER_GUILD_UPDATE" then self:HandleGuildUpdate()
     elseif event == "MAIL_SHOW" then r.mailOpen = true; r.mailLootables = countMailboxLootables(); self:UpdateContextMode()
-    elseif event == "MAIL_CLOSED" then r.mailOpen = false; self:UpdateContextMode()
+    elseif event == "MAIL_CLOSED" then r.mailOpen = false; if self.DropQueuedTopic then self:DropQueuedTopic("mail") end; self:UpdateContextMode()
     elseif event == "MAIL_INBOX_UPDATE" then self:HandleMailUpdate()
     elseif event == "BANKFRAME_OPENED" then r.bankOpen = true; self:ReactContext("bank", {}, 6, 120); self:UpdateContextMode()
-    elseif event == "BANKFRAME_CLOSED" then r.bankOpen = false; self:UpdateContextMode()
+    elseif event == "BANKFRAME_CLOSED" then r.bankOpen = false; if self.DropQueuedTopic then self:DropQueuedTopic("bank") end; self:UpdateContextMode()
     elseif event == "AUCTION_HOUSE_SHOW" then r.auctionOpen = true; if self.RefreshGoldIntegration then self:RefreshGoldIntegration() end; self:ReactContext("auction", {}, 6, 180); self:UpdateContextMode()
-    elseif event == "AUCTION_HOUSE_CLOSED" then r.auctionOpen = false; if self.RefreshGoldIntegration then self:RefreshGoldIntegration() end; if self.RevalueGoldSession then self:RevalueGoldSession() end; self:UpdateContextMode()
+    elseif event == "AUCTION_HOUSE_CLOSED" then r.auctionOpen = false; if self.DropQueuedTopic then self:DropQueuedTopic("auction") end; if self.RefreshGoldIntegration then self:RefreshGoldIntegration() end; if self.RevalueGoldSession then self:RevalueGoldSession() end; self:UpdateContextMode()
     elseif event == "MERCHANT_SHOW" then r.merchantOpen = true; r.durabilityCurrent, r.durabilityMax, r.broken = durabilityTotals(); self:UpdateContextMode()
     elseif event == "MERCHANT_CLOSED" then r.merchantOpen = false; self:UpdateContextMode()
     elseif event == "UPDATE_INVENTORY_DURABILITY" then self:HandleDurabilityChange()
@@ -547,9 +549,11 @@ function FC:HandleContextEvent(event, ...)
     elseif event == "ENCOUNTER_END" then
         local encounterID, encounterName, _, _, success = ...
         if type(self.OnDungeonEncounterEnd) == "function" then self:OnDungeonEncounterEnd(encounterID, encounterName, success) end
-    elseif event == "TRADE_SHOW" then self:ReactContext("trade", {}, 5, 120)
+    elseif event == "TRADE_SHOW" then r.tradeOpen = true; self:ReactContext("trade", {}, 5, 120); self:UpdateContextMode()
+    elseif event == "TRADE_CLOSED" then r.tradeOpen = false; if self.DropQueuedTopic then self:DropQueuedTopic("trade") end; self:UpdateContextMode()
     elseif event == "DELETE_ITEM_CONFIRM" then self:HandleDeleteItem(...)
-    elseif event == "BARBER_SHOP_OPEN" then self:ReactContext("barber", {}, 5, 180, "amused", 1)
+    elseif event == "BARBER_SHOP_OPEN" then r.barberOpen = true; self:ReactContext("barber", {}, 5, 180, "amused", 1)
+    elseif event == "BARBER_SHOP_CLOSE" then r.barberOpen = false; if self.DropQueuedTopic then self:DropQueuedTopic("barber") end
     elseif event == "PLAYER_PVP_KILLS_CHANGED" then self:ReactContext("pvpkill", {}, 15, 45, "impressed", 2)
     elseif event == "UPDATE_BATTLEFIELD_STATUS" then self:HandleBattlegroundResult()
     elseif event == "COMBAT_TEXT_UPDATE" then self:HandleCombatText(...)

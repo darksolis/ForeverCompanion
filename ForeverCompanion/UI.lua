@@ -95,13 +95,13 @@ function FC:CreateUI()
 
     local bubbleName = bubble:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     self.bubbleName = bubbleName
-    bubbleName:SetJustifyH("CENTER")
-    bubbleName:SetTextColor(0.46, 0.12, 0.62)
+    bubbleName:SetJustifyH("LEFT")
+    bubbleName:SetTextColor(0.28, 0.08, 0.42)
     if bubbleName.SetShadowOffset then
         bubbleName:SetShadowOffset(1, -1)
-        bubbleName:SetShadowColor(1, 1, 1, 0.45)
+        bubbleName:SetShadowColor(1, 1, 1, 0.72)
     end
-    applyComicFont(bubbleName, 13, true)
+    applyComicFont(bubbleName, 14, true)
 
     local bubbleText = bubble:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     self.bubbleText = bubbleText
@@ -149,11 +149,12 @@ function FC:UpdateBubbleLayout()
     local bodyWidth = math.max(160, math.floor(width * 0.58))
     local bodyHeight = math.max(54, math.floor(height * 0.38))
 
-    local nameShiftX = mirrored and -16 or 16
-    local nameWidth = math.max(120, math.floor(width * 0.52))
+    local nameInsetX = 56
+    local nameInsetY = -18
+    local nameWidth = math.max(110, math.floor(width * 0.34))
 
     self.bubbleName:ClearAllPoints()
-    self.bubbleName:SetPoint("TOP", self.bubble, "TOP", nameShiftX, -24)
+    self.bubbleName:SetPoint("TOPLEFT", self.bubble, "TOPLEFT", nameInsetX, nameInsetY)
     self.bubbleName:SetWidth(nameWidth)
 
     self.bubbleText:ClearAllPoints()
@@ -448,7 +449,7 @@ end
 
 function FC:ShowHelp()
     self:Say(
-        "/fc talk • learn • word • vocabquiz • trivia • riddle • quote • question • strangefact • story • stats • dungeon • farm • profile • test • doctor • settings",
+        "/fc talk • learn • word • vocabquiz • trivia • riddle • quote • question • strangefact • story • stats • dungeon • farm • timing • profile • test • doctor • settings",
         "talk",
         100,
         true

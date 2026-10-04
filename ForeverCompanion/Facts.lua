@@ -156,6 +156,42 @@ function FC:ValidateStatement(topic, data, queuedFacts)
         return false
     end
 
+    local runtime = self.state.runtime or {}
+    local mode = self.state.contextMode or "unknown"
+
+    -- Short-lived UI/activity statements are only valid while that context is still true.
+    if topic == "auction" then return runtime.auctionOpen == true end
+    if topic == "bank" then return runtime.bankOpen == true end
+    if topic == "mail" then return runtime.mailOpen == true end
+    if topic == "trade" then return runtime.tradeOpen == true end
+    if topic == "barber" and runtime.barberOpen ~= nil then return runtime.barberOpen == true end
+    if topic == "eat" then return runtime.eating == true end
+    if topic == "drink" then return runtime.drinking == true end
+    if topic == "campfire" then return runtime.campfire == true end
+    if topic == "stealth" then return runtime.stealth == true end
+    if topic == "flightstart" then return runtime.onTaxi == true end
+    if topic == "flightland" then return runtime.onTaxi ~= true end
+    if topic == "swim" then return runtime.swimming == true end
+    if topic == "shore" then return runtime.swimming ~= true end
+    if topic == "idle" then
+        return (GetTime() - (self.state.lastAction or GetTime())) >= 300 and not self.state.inCombat
+    end
+    if topic == "townambient" then return mode == "town_chores" end
+    if topic == "travelambient" then return mode == "traveling" or mode == "taxi" end
+    if topic == "restambient" then return mode == "resting" end
+    if topic == "dungeonambient" then return mode == "instance" end
+    if topic == "walking" then return runtime.moving == true and runtime.mounted ~= true and runtime.onTaxi ~= true end
+    if topic == "goldambient" then return self.state.gold and self.state.gold.active == true end
+    if topic == "zoneambient" and data.zone then return live.zone == data.zone end
+    if topic == "personalreflection" and data.zone and data.zone ~= "Azeroth" then return live.zone == data.zone end
+
+    if topic == "questdone" and data.title then
+        local snapshot = self.state.questSnapshot or {}
+        for _, quest in pairs(snapshot.quests or {}) do
+            if quest and quest.complete and quest.title == data.title then return true end
+        end
+        return false
+    end
     if topic == "xp25" then return live.xpPct >= 0.25 and live.xpPct < 0.50 end
     if topic == "xp50" then return live.xpPct >= 0.50 and live.xpPct < 0.75 end
     if topic == "xp75" then return live.xpPct >= 0.75 and live.xpPct < 0.90 end
