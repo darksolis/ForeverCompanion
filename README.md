@@ -1,12 +1,15 @@
-[README.md](https://github.com/user-attachments/files/32977020/README.md)
 # Forever Companion
 
 **Created by Darktotem Stormforge**  
-Version: **0.9.44-rc39**
+Version: **0.9.51-rc46**
 
 Forever Companion adds **Vexa**, an animated, context-aware in-game companion for WoW Forever. She reacts to what you are actually doing, remembers your characters, tracks progression, watches combat and dungeons, comments on loot and gold farming, calls out important class procs, and keeps you company with a large local-only conversation library.
 
 No external AI service or API key is required.
+
+## Vexa Learning Report
+
+Forever Companion now includes a GUI-first observation system for improving Vexa from real gameplay. A hidden **Vexa Learning Report** section inside Settings opens a window that tracks repeated dialogue, late/stale reactions, recent gameplay events, topic variety, and possible context gaps. Use **Missed something** after an interaction Vexa ignored, or **Bad last reaction** when a response did not fit. Click **Generate + Select**, press Ctrl+C, and paste the report into ChatGPT. No slash commands are required.
 
 ## Highlights
 
@@ -193,14 +196,14 @@ Enjoy the road. Vexa will have something to say about it.
 Combat Calls use multiple detection paths because WoW Forever may not emit retail proc-overlay events consistently. The addon checks action-bar usability, proc auras/stacks, combat-log reactive events, and overlay events when available.
 
 Useful commands:
-- `/fc proc test Overpower` - force a visual/sound/shout test
+- `/fc proc test Overpower` - force a visual/voice/shout test; generic SFX is used only if no voice can play
 - `/fc proc doctor` - show event/API/action-bar detection status
 - `/fc proc reset` - restore Combat Calls defaults and rebuild its action map
 
 
 ## Spoken Combat Calls
 
-Combat Calls use a compact borderless spell alert and can use prerecorded Vexa OGG clips for proc names such as Overpower, Riposte, and Maelstrom. Client TTS remains optional as a fallback, but when the custom pack is enabled RC39 leaves TTS fallback off by default. Position, scale, icon size, text size, duration, and audio behavior are adjustable under **Combat Calls**. Use `/fc proc move` to drag the alert and `/fc proc lock` to lock it.
+Combat Calls use a compact borderless spell alert and prioritize prerecorded Vexa OGG clips for proc names such as Overpower, Riposte, and Maelstrom. Client TTS remains optional as a fallback and is off by default. Combat audio is exclusive: prerecorded Vexa voice first, optional TTS second, then generic alert SFX only when no voice can play. Position, scale, icon size, text size, duration, and audio behavior are adjustable under **Combat Calls**. Use `/fc proc move` to drag the alert and `/fc proc lock` to lock it.
 
 ## Speech bubbles
 
@@ -208,6 +211,26 @@ Long Vexa thoughts automatically continue across multiple numbered bubbles so di
 
 
 ## Vexa prerecorded voice pack
-RC39 supports prerecorded OGG voice clips for both class procs and gameplay events. Put clips in `Media/Voice/Vexa/`. Proc files are listed in `VOICE_PACK_MANIFEST.csv`; gameplay reactions are listed in `VOICE_PACK_EVENTS.csv`; and `VEXA_VOICE_PACK_MASTER_LIST.csv` combines both. Event hooks include interrupts, low health/close calls, death, level-ups, boss pulls/kills, dungeon entry/wipes/completion, rare/epic loot, upgrades, quest completion, bag/repair warnings, AFK returns, PvP, resource warnings, and travel/farming reactions.
+The addon ships the complete Jessica Vexa voice library directly in `Media/Voice/Vexa/`: **607 OGG clips total** — **41 core event/reaction clips**, **59 class/proc clips**, and **507 personality-expansion clips across 60 categories**. The expansion lives in `Media/Voice/Vexa/Personality/` and is routed by `PersonalityVoicePack.lua`, which keeps every selected recording paired with its exact speech-bubble text.
 
-Use `/fc voicepack test interrupt`, `/fc voicepack list`, and `/fc voicepack doctor` to test the pack. Prerecorded clips use WoW's Dialog channel and respect game audio mute settings. When the custom proc pack is enabled, TTS fallback is off by default so missing media does not unexpectedly switch back to the robotic system voice.
+Gameplay/event clips include interrupts, low-health and close-call warnings, death/resurrection, level-ups, boss pulls and kills, dungeon entry/wipes/completion, loot, upgrades, quest completion, bag/repair warnings, AFK return, PvP, resource warnings, travel, farming, elite/dangerous targets, rare discoveries, and more. Proc clips cover all current class entries in the proc catalog. Canonical filenames are lowercase with underscores.
+
+Use `/fc voicepack test <cue>` for event/reaction clips (for example `/fc voicepack test low_health`) and `/fc proc test <spell>` for proc clips (for example `/fc proc test Revenge` or `/fc proc test Maelstrom Weapon`). `/fc voicepack doctor` reports the bundled pack counts and current playback state. Prerecorded clips use WoW's Dialog channel and respect game audio mute settings. Custom proc clips remain preferred over TTS by default.
+
+Reference files in the voice folder:
+- `VOICE_PACK_EVENTS.csv` — event/reaction cue map.
+- `VOICE_PACK_MANIFEST.csv` — proc cue map used by the addon documentation.
+- `VEXA_VOICE_PACK_MASTER_LIST.csv` — original 100-clip core/proc trigger list.
+- `Personality/VOICE_PACK_MANIFEST.csv` + `.json` — full 507-clip personality expansion metadata and routing source.
+- `VOICE_PACK_AUDIO_MANIFEST.csv` — full generated-pack metadata, hashes, format, emotion, and source information.
+- `VOICE_PACK_QA.txt` — RC53 integration audit and coverage summary.
+
+## Jessica Personality Expansion (RC57)
+
+RC57 bundles 507 additional Jessica recordings under `Media/Voice/Vexa/Personality/`, bringing the complete Vexa voice library to 607 clips. The expansion is manifest-driven: each audio file is tied to its exact spoken text, category, rarity, bond tier, and suggested cooldown. When an expansion clip is selected, the on-screen speech bubble uses the matching recorded line.
+
+Useful QA commands:
+- `/fc voicepack doctor` — show core + personality voice status
+- `/fc voicepack personalitylist` — list all personality categories
+- `/fc voicepack personality idle_banter` — force-test one category (replace `idle_banter` with any listed category)
+

@@ -1,0 +1,49 @@
+## Interface: 120100, 16001, 50504, 38000, 20506, 11508, 11509
+## Title: Forever Companion
+## Notes: Context-aware animated leveling companion for WoW Forever.
+## Author: Darktotem Stormforge
+## Version: 0.9.62-rc57
+## SavedVariables: ForeverCompanionDB
+## OptionalDeps: Auctionator
+## IconTexture: Interface/AddOns/ForeverCompanion/Textures/AddonIcon.tga
+
+Core.lua
+Compat.lua
+Data.lua
+Dialogue.lua
+Arrivals.lua
+ContextDialogue.lua
+ConversationPack.lua
+ConversationMegaPack.lua
+LibraryExpansion.lua
+VarietyExpansion.lua
+Lexicon.lua
+Riddles.lua
+Trivia.lua
+Memory.lua
+Journal.lua
+Scanner.lua
+XP.lua
+Quests.lua
+World.lua
+Combat.lua
+Facts.lua
+Context.lua
+Dungeon.lua
+ProcAlerts.lua
+VoicePack.lua
+PersonalityVoicePack.lua
+Session.lua
+MemoryIO.lua
+Integrations.lua
+Gold.lua
+Brain.lua
+LearningLab.lua
+ConversationEngine.lua
+Renderer.lua
+UI.lua
+TestLab.lua
+Settings.lua
+SettingsV2.lua
+Minimap.lua
+Events.lua
